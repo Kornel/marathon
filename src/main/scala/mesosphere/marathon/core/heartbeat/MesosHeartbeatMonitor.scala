@@ -1,10 +1,10 @@
-package mesosphere.marathon
+package mesosphere.marathon.core.heartbeat
 
 import java.util.UUID
 import javax.inject.{ Inject, Named }
 
 import akka.actor.ActorRef
-import mesosphere.marathon.util.heartbeat.Heartbeat
+import mesosphere.marathon.ModuleNames
 import org.apache.mesos.{ Scheduler, SchedulerDriver }
 import org.apache.mesos.Protos._
 import org.slf4j.LoggerFactory

@@ -11,6 +11,7 @@ import com.codahale.metrics.MetricRegistry
 import com.google.common.util.concurrent.AbstractExecutionThreadService
 import mesosphere.marathon.MarathonSchedulerActor._
 import mesosphere.marathon.core.election.{ ElectionCandidate, ElectionService }
+import mesosphere.marathon.core.heartbeat._
 import mesosphere.marathon.core.leadership.LeadershipCoordinator
 import mesosphere.marathon.core.task.Task
 import mesosphere.marathon.health.HealthCheckManager
@@ -18,7 +19,6 @@ import mesosphere.marathon.metrics.Metrics
 import mesosphere.marathon.state.{ AppDefinition, AppRepository, Migration, PathId, Timestamp }
 import mesosphere.marathon.upgrade.DeploymentManager.{ CancelDeployment, DeploymentStepInfo }
 import mesosphere.marathon.upgrade.DeploymentPlan
-import mesosphere.marathon.util.heartbeat.Heartbeat
 import mesosphere.util.PromiseActor
 import mesosphere.util.state.FrameworkIdUtil
 import org.apache.mesos.Protos.FrameworkID

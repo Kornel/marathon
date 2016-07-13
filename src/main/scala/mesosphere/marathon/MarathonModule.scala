@@ -26,7 +26,7 @@ import mesosphere.marathon.io.storage.StorageProvider
 import mesosphere.marathon.metrics.Metrics
 import mesosphere.marathon.state._
 import mesosphere.marathon.upgrade.{ DeploymentManager, DeploymentPlan }
-import mesosphere.marathon.util.heartbeat.Heartbeat
+import mesosphere.marathon.core.heartbeat._
 import mesosphere.util.state.memory.InMemoryStore
 import mesosphere.util.state.mesos.MesosStateStore
 import mesosphere.util.state.zk.{ CompressionConf, ZKStore }

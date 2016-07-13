@@ -1,6 +1,7 @@
 package mesosphere.marathon
 
 import mesosphere.marathon.core.flow.{ ReviveOffersConfig, LaunchTokenConfig }
+import mesosphere.marathon.core.heartbeat.MesosHeartbeatMonitor
 import mesosphere.marathon.core.launcher.OfferProcessorConfig
 import mesosphere.marathon.core.launchqueue.LaunchQueueConfig
 import mesosphere.marathon.core.matcher.manager.OfferMatcherManagerConfig
