@@ -47,11 +47,7 @@ class MarathonSchedulerTest extends MarathonActorSupport with MarathonSpec with 
       frameworkIdUtil,
       mesosLeaderInfo,
       mock[ActorSystem],
-      config,
-      new SchedulerCallbacks {
-        override def disconnected(): Unit = {}
-      }
-    ) {
+      config) {
       override protected def suicide(removeFrameworkId: Boolean): Unit = {
         suicideFn(removeFrameworkId)
       }

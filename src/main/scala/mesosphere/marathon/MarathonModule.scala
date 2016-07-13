@@ -74,9 +74,6 @@ class MarathonModule(conf: MarathonConf, http: HttpConf)
     bind(classOf[LeaderProxyConf]).toInstance(conf)
     bind(classOf[ZookeeperConf]).toInstance(conf)
 
-    // needs to be eager to break circular dependencies
-    bind(classOf[SchedulerCallbacks]).to(classOf[SchedulerCallbacksServiceAdapter]).asEagerSingleton()
-
     // MesosHeartbeatMonitor decorates MarathonScheduler
     bind(classOf[Scheduler]).to(classOf[MesosHeartbeatMonitor]).in(Scopes.SINGLETON)
     bind(classOf[Scheduler])
