@@ -165,6 +165,7 @@ class MarathonSchedulerService @Inject() (
   override def triggerShutdown(): Unit = synchronized {
     log.info("Shutdown triggered")
 
+    electionService.abdicateLeadership(reoffer = false)
     stopDriver()
 
     log.info("Cancelling timer")
@@ -177,11 +178,15 @@ class MarathonSchedulerService @Inject() (
     super.triggerShutdown()
   }
 
-  def stopDriver(): Unit = synchronized {
+  private[this] def stopDriver(): Unit = synchronized {
+    // many are the assumptions concerning when this is invoked. see startLeadership, stopLeadership,
+    // triggerShutdown.
     log.info("Stopping driver")
 
     // Stopping the driver will cause the driver run() method to return.
     driver.foreach(_.stop(true)) // failover = true
+
+    // signals that the driver was stopped manually (as opposed to crashing mid-process)
     driver = None
   }
 
@@ -189,7 +194,7 @@ class MarathonSchedulerService @Inject() (
 
   //Begin ElectionCandidate interface
 
-  def startLeadership(): Unit = synchronized {
+  override def startLeadership(): Unit = synchronized {
     log.info("As new leader running the driver")
 
     // execute tasks, only the leader is allowed to
@@ -220,7 +225,6 @@ class MarathonSchedulerService @Inject() (
       }
     } onComplete { result =>
       synchronized {
-        driver = None
 
         log.info(s"Driver future completed with result=$result.")
         result match {
@@ -228,8 +232,16 @@ class MarathonSchedulerService @Inject() (
           case _ =>
         }
 
-        // tell leader election that we step back, but want to be re-elected if isRunning is true.
-        electionService.abdicateLeadership(error = result.isFailure, reoffer = isRunningLatch.getCount > 0)
+        // ONLY do this if there's some sort of driver crash: avoid invoking abdication logic if
+        // the driver was stopped via stopDriver. stopDriver only happens when
+        //   1. we're being terminated (and have already abdicated)
+        //   2. we've lost leadership (no need to abdicate if we've already lost)
+        driver.foreach { _ =>
+          // tell leader election that we step back, but want to be re-elected if isRunning is true.
+          electionService.abdicateLeadership(error = result.isFailure, reoffer = isRunningLatch.getCount > 0)
+        }
+
+        driver = None
 
         log.info(s"Call postDriverRuns callbacks on ${prePostDriverCallbacks.mkString(", ")}")
         Await.result(Future.sequence(prePostDriverCallbacks.map(_.postDriverTerminates)), config.zkTimeoutDuration)
@@ -238,7 +250,8 @@ class MarathonSchedulerService @Inject() (
     }
   }
 
-  def stopLeadership(): Unit = synchronized {
+  override def stopLeadership(): Unit = synchronized {
+    // invoked by election service upon loss of leadership (state transitioned to Idle)
     log.info("Lost leadership")
 
     leadershipCoordinator.stop()
@@ -250,11 +263,11 @@ class MarathonSchedulerService @Inject() (
     driver.map { driverInstance =>
       mesosHeartbeatActor ! Heartbeat.MessageDeactivate(MesosHeartbeatMonitor.sessionOf(driverInstance))
       // Our leadership has been defeated. Thus, stop the driver.
-      // Note that abdication command will be ran upon driver shutdown which
-      // will then offer leadership again.
       stopDriver()
     }
-    if (driver.isEmpty) {
+    // Abdication will have already happened if the driver terminated abnormally.
+    // Otherwise we've either been terminated or have lost leadership for some other reason (network part?)
+    if (driver.isEmpty && isRunningLatch.getCount > 0) {
       electionService.offerLeadership(this)
     }
   }

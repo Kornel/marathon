@@ -391,6 +391,6 @@ class MarathonSchedulerServiceTest
     driverCompleted.countDown()
     awaitAssert(verify(cb).postDriverTerminates)
 
-    awaitAssert(verify(electionService).abdicateLeadership(error = false, reoffer = true))
+    awaitAssert(verify(electionService).offerLeadership(candidate = schedulerService))
   }
 }
