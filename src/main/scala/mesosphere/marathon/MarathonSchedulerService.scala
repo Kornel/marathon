@@ -267,7 +267,7 @@ class MarathonSchedulerService @Inject() (
     }
     // Abdication will have already happened if the driver terminated abnormally.
     // Otherwise we've either been terminated or have lost leadership for some other reason (network part?)
-    if (driver.isEmpty && isRunningLatch.getCount > 0) {
+    if (isRunningLatch.getCount > 0) {
       electionService.offerLeadership(this)
     }
   }

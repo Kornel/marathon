@@ -11,17 +11,19 @@ import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConverters._
 
-// @constructor create a mesos Scheduler decorator that intercepts callbacks from a mesos SchedulerDriver,
-// translating each callback into some kind of HeartbeatMonitor.Message that is asynchronously delivered to a
-// heartbeatActor. All callback parameters are passed through, unchanged, to the given delegate scheduler
-// implementation.
-//
-// @param scheduler is the delegate scheduler implementation
-// @param heartbeatActor is the receipient of generated Heartbeat.Message's
-//
-// @see mesosphere.util.monitor.HeartbeatMonitor
-// @see org.apache.mesos.Scheduler
-// @see org.apache.mesos.SchedulerDriver
+/**
+  * @constructor create a mesos Scheduler decorator that intercepts callbacks from a mesos SchedulerDriver,
+  * translating each callback into some kind of HeartbeatMonitor.Message that is asynchronously delivered to a
+  * heartbeatActor. All callback parameters are passed through, unchanged, to the given delegate scheduler
+  * implementation.
+  *
+  * @param scheduler is the delegate scheduler implementation
+  * @param heartbeatActor is the receipient of generated Heartbeat.Message's
+  *
+  * @see mesosphere.util.monitor.HeartbeatMonitor
+  * @see org.apache.mesos.Scheduler
+  * @see org.apache.mesos.SchedulerDriver
+  */
 class MesosHeartbeatMonitor @Inject() (
     @Named(MesosHeartbeatMonitor.BASE) scheduler: Scheduler,
     @Named(ModuleNames.MESOS_HEARTBEAT_ACTOR) heartbeatActor: ActorRef
@@ -84,7 +86,7 @@ class MesosHeartbeatMonitor @Inject() (
     if (!isFakeHeartbeatUpdate(status)) {
       scheduler.statusUpdate(driver, status)
     } else {
-      log.info("received fake heartbeat task-status update")
+      log.debug("received fake heartbeat task-status update")
     }
   }
 
@@ -144,7 +146,7 @@ object MesosHeartbeatMonitor {
   final val FAKE_TASK_PREFIX = "fake-marathon-pacemaker-task-"
   final val FAKE_AGENT_PREFIX = "fake-marathon-pacemaker-agent-"
 
-  // @return a uniquely identifying token for the current session
+  /** @return a uniquely identifying token for the current session */
   def sessionOf(driver: SchedulerDriver): AnyRef =
     // a new driver is instantiated for each session already so we can just use the driver instance
     // as the session token. it feels a bit hacky but does the job. would rather hack this in one place
